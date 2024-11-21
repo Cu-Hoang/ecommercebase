@@ -1,0 +1,22 @@
+server:
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: ecommercebase
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ecommerce
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        globally_quoted_identifiers: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
