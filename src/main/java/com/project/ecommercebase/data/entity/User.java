@@ -5,10 +5,11 @@ import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
 
-import com.project.ecommercebase.enums.AccountStatus;
 import jakarta.persistence.*;
 
 import org.hibernate.annotations.UuidGenerator;
+
+import com.project.ecommercebase.enums.AccountStatus;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -50,6 +51,6 @@ public class User extends BaseEntity {
 
     Set<String> roles;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = User.class)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = Code.class)
     Set<Code> codes;
 }

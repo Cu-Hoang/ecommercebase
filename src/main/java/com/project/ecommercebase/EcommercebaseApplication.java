@@ -8,8 +8,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 @EnableJpaAuditing(auditorAwareRef = "auditAwareImpl")
 public class EcommercebaseApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(EcommercebaseApplication.class, args);
-	}
-
+    public static void main(String[] args) {
+        SpringApplication.run(EcommercebaseApplication.class, args);
+    }
 }

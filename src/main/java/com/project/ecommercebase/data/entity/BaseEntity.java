@@ -1,14 +1,16 @@
 package com.project.ecommercebase.data.entity;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
-import lombok.Data;
+
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDate;
+import lombok.Data;
 
 @Data
 @MappedSuperclass
@@ -16,8 +18,9 @@ import java.time.LocalDate;
 public class BaseEntity {
     @CreatedDate
     @Column(updatable = false)
-    LocalDate createdAt;
+    LocalDateTime createdAt;
+
     @LastModifiedDate
     @Column(insertable = false)
-    LocalDate updatedAt;
+    LocalDateTime updatedAt;
 }
