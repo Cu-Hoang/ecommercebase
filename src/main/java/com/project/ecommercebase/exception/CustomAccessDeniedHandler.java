@@ -16,7 +16,7 @@ import com.project.ecommercebase.dto.response.ApiResponse;
 import com.project.ecommercebase.enums.ErrorCode;
 
 @Component
-public class CustomeAccessDeniedHandler implements AccessDeniedHandler {
+public class CustomAccessDeniedHandler implements AccessDeniedHandler {
     @Override
     public void handle(
             HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException)

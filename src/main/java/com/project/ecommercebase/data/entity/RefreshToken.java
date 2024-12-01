@@ -16,17 +16,15 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Data
 @Builder
-public class Code extends BaseEntity {
+public class RefreshToken extends BaseEntity {
     @Id
     @UuidGenerator(style = UuidGenerator.Style.TIME)
     UUID id;
 
-    String codes;
-
-    LocalDateTime expiredAt;
+    String code;
 
     @Builder.Default
-    Boolean isUsed = false;
+    LocalDateTime expiredAt = LocalDateTime.now().plusYears(1);
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)

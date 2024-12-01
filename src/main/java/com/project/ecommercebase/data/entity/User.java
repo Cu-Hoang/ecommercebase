@@ -25,6 +25,10 @@ public class User extends BaseEntity {
     @UuidGenerator(style = UuidGenerator.Style.TIME)
     UUID id;
 
+    String firstname;
+
+    String lastname;
+
     @Column(nullable = false, unique = true)
     String username;
 
@@ -39,8 +43,6 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     AccountStatus accountStatus = AccountStatus.PENDING;
 
-    LocalDateTime lastLoginDate;
-
     LocalDate dateOfBirth;
 
     LocalDateTime lockedUntil;
@@ -51,6 +53,16 @@ public class User extends BaseEntity {
 
     Set<String> roles;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = Code.class)
-    Set<Code> codes;
+    @OneToOne(cascade = CascadeType.ALL, targetEntity = Shop.class)
+    @JoinTable(
+            name = "user_shop",
+            joinColumns = {@JoinColumn(name = "user_id", referencedColumnName = "id")},
+            inverseJoinColumns = {@JoinColumn(name = "shop_id", referencedColumnName = "id")})
+    Shop shop;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = RefreshToken.class)
+    Set<RefreshToken> refreshTokens;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = Address.class)
+    Set<Address> addresses;
 }

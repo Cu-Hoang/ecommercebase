@@ -8,7 +8,11 @@ import com.project.ecommercebase.dto.request.UserUpdateRequest;
 import com.project.ecommercebase.dto.response.UserResponse;
 
 public interface UserService {
-    UserResponse createUser(UserRequest userRequest);
+    UserResponse createCustomer(UserRequest userRequest);
+
+    UserResponse updateToVendor();
+
+    UserResponse createVendor(UserRequest userRequest);
 
     List<UserResponse> getAllUsers();
 

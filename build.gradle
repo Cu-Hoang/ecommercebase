@@ -26,19 +26,27 @@ repositories {
 
 ext {
 	lombok_version = "1.18.36"
-	mapstructVersion = "1.6.3"
+	mapstruct_version = "1.6.3"
+	cryto_version = "6.4.1"
+	openapi_webmvc_version = "2.6.0"
+	mail_version = "3.4.0"
 }
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation "org.mapstruct:mapstruct:${mapstructVersion}"
+	implementation "org.mapstruct:mapstruct:${mapstruct_version}"
 //	implementation 'org.liquibase:liquibase-core'
+	implementation "org.springframework.security:spring-security-crypto:${cryto_version}"
+	implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${openapi_webmvc_version}"
+	implementation "org.springframework.boot:spring-boot-starter-mail:${mail_version}"
+
+
 	compileOnly "org.projectlombok:lombok:${lombok_version}"
 	runtimeOnly 'org.postgresql:postgresql'
 	annotationProcessor "org.projectlombok:lombok:${lombok_version}"
-	annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
+	annotationProcessor "org.mapstruct:mapstruct-processor:${mapstruct_version}"
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

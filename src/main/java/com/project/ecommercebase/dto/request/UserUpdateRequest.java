@@ -1,7 +1,6 @@
 package com.project.ecommercebase.dto.request;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -12,11 +11,13 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserUpdateRequest {
+    String firstname;
+
+    String lastname;
+
     String username;
 
     String email;
-
-    LocalDateTime lastLoginDate;
 
     LocalDate dateOfBirth;
 }

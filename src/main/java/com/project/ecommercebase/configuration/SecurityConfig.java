@@ -17,7 +17,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
-import com.project.ecommercebase.exception.CustomeAccessDeniedHandler;
+import com.project.ecommercebase.exception.CustomAccessDeniedHandler;
 import com.project.ecommercebase.exception.JwtCustomAuthenticationEntryPoint;
 
 @Configuration
@@ -31,7 +31,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(request -> request.anyRequest().permitAll())
                 .exceptionHandling(exceptionConfigurer -> exceptionConfigurer
                         .authenticationEntryPoint(new JwtCustomAuthenticationEntryPoint())
-                        .accessDeniedHandler(new CustomeAccessDeniedHandler()))
+                        .accessDeniedHandler(new CustomAccessDeniedHandler()))
                 .build();
     }
 
