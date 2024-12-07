@@ -1,12 +1,15 @@
 package com.project.ecommercebase.controller;
 
+import java.util.concurrent.CompletableFuture;
+
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.web.bind.annotation.*;
 
 import com.project.ecommercebase.constant.Endpoint;
 import com.project.ecommercebase.dto.request.UserRequest;
 import com.project.ecommercebase.dto.response.ApiResponse;
 import com.project.ecommercebase.dto.response.UserResponse;
-import com.project.ecommercebase.service.MailService;
 import com.project.ecommercebase.service.impl.UserServiceImpl;
 
 import lombok.AccessLevel;
@@ -19,7 +22,8 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserController {
     UserServiceImpl userService;
-    MailService mailService;
+
+    KafkaTemplate<String, String> kafkaTemplate;
 
     @PostMapping(value = Endpoint.UserEndpoint.CREATE_USER)
     public ApiResponse<UserResponse> createUser(@RequestBody UserRequest userRequest) {
@@ -30,8 +34,18 @@ public class UserController {
     }
 
     @PostMapping(value = "/sendmail")
-    public ApiResponse<String> sendMail() {
-        mailService.sendSimpleMessage("cungochoang2002@gmail.com", "Test", "This is a test");
-        return ApiResponse.<String>builder().message("Mail sent").build();
+    public ApiResponse<String> sendMail(@RequestBody String email) {
+        CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send("mail_topic", email);
+        future.whenComplete((result, ex) -> {
+            if (ex == null) {
+                System.out.println("Sent message=[" + email + "] with offset=["
+                        + result.getRecordMetadata().offset() + "]");
+            } else {
+                System.out.println("Unable to send message=[" + email + "] due to : " + ex.getMessage());
+            }
+        });
+        return ApiResponse.<String>builder()
+                .message("Mail is sent successfully.")
+                .build();
     }
 }

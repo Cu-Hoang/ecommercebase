@@ -30,6 +30,9 @@ ext {
 	cryto_version = "6.4.1"
 	openapi_webmvc_version = "2.6.0"
 	mail_version = "3.4.0"
+	redis_version = "3.4.0"
+	lettuce_version = "6.5.0.RELEASE"
+	kafka_version = "3.3.0"
 }
 
 dependencies {
@@ -41,7 +44,9 @@ dependencies {
 	implementation "org.springframework.security:spring-security-crypto:${cryto_version}"
 	implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${openapi_webmvc_version}"
 	implementation "org.springframework.boot:spring-boot-starter-mail:${mail_version}"
-
+	implementation "org.springframework.boot:spring-boot-starter-data-redis:${redis_version}"
+	implementation "io.lettuce:lettuce-core:${lettuce_version}"
+	implementation "org.springframework.kafka:spring-kafka:${kafka_version}"
 
 	compileOnly "org.projectlombok:lombok:${lombok_version}"
 	runtimeOnly 'org.postgresql:postgresql'

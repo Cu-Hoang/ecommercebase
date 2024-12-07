@@ -1,4 +1,5 @@
 server:
+  port: 8080
   servlet:
     context-path: /api/v1
 
@@ -32,5 +33,20 @@ spring:
           starttls:
             enable: true
             required: true
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      value-serializer: "org.springframework.kafka.support.serializer.JsonSerializer"
+      properties:
+        "[spring.json.add.type.headers]": false
+      key-serializer:
+    consumer:
+      value-deserializer: "org.springframework.kafka.support.serializer.JsonDeserializer"
+
+  data:
+    redis:
+      host: localhost
+      port: 6380
+
 
 
