@@ -45,8 +45,16 @@ spring:
 
   data:
     redis:
-      host: localhost
-      port: 6380
+      host: 172.24.64.1
+      port: 6379
+
+logging:
+  level:
+    org:
+      springframework:
+        data:
+          redis:
+            DEBUG
 
 
 

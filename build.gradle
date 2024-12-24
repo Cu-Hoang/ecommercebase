@@ -33,12 +33,14 @@ ext {
 	redis_version = "3.4.0"
 	lettuce_version = "6.5.0.RELEASE"
 	kafka_version = "3.3.0"
+	hibernate_validator = "8.0.2.Final"
 }
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation "org.mapstruct:mapstruct:${mapstruct_version}"
 //	implementation 'org.liquibase:liquibase-core'
 	implementation "org.springframework.security:spring-security-crypto:${cryto_version}"
@@ -47,6 +49,7 @@ dependencies {
 	implementation "org.springframework.boot:spring-boot-starter-data-redis:${redis_version}"
 	implementation "io.lettuce:lettuce-core:${lettuce_version}"
 	implementation "org.springframework.kafka:spring-kafka:${kafka_version}"
+	implementation "org.hibernate.validator:hibernate-validator:${hibernate_validator}"
 
 	compileOnly "org.projectlombok:lombok:${lombok_version}"
 	runtimeOnly 'org.postgresql:postgresql'

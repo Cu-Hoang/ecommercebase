@@ -3,16 +3,23 @@ package com.project.ecommercebase.service;
 import java.util.List;
 import java.util.UUID;
 
-import com.project.ecommercebase.dto.request.UserRequest;
+import com.project.ecommercebase.dto.request.EmailRequest;
+import com.project.ecommercebase.dto.request.EmailVerificationRequest;
+import com.project.ecommercebase.dto.request.UserRegisterRequest;
 import com.project.ecommercebase.dto.request.UserUpdateRequest;
 import com.project.ecommercebase.dto.response.UserResponse;
+import com.project.ecommercebase.enums.Role;
 
 public interface UserService {
-    UserResponse createCustomer(UserRequest userRequest);
+    String createEmailVerificationCode(EmailRequest emailRequest);
+
+    String verifyEmail(EmailVerificationRequest emailVerificationRequest);
+
+    UserResponse registerUser(UserRegisterRequest userRegisterRequest, Role role);
 
     UserResponse updateToVendor();
 
-    UserResponse createVendor(UserRequest userRequest);
+    UserResponse createVendor(EmailRequest emailRequest);
 
     List<UserResponse> getAllUsers();
 

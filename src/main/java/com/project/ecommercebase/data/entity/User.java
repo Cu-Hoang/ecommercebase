@@ -29,13 +29,12 @@ public class User extends BaseEntity {
 
     String lastname;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     String username;
 
     @Column(nullable = false, unique = true)
     String email;
 
-    @Column(nullable = false)
     @ToString.Exclude
     String password;
 

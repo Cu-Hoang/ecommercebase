@@ -38,26 +38,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Object>> methodArgumentNotValidExceptionHandler(
             MethodArgumentNotValidException e) {
-        ErrorCode errorCode = ErrorCode.INVALID_KEY;
+        ErrorCode errorCode = ErrorCode.INVALID_FIELD;
         Map<String, String> errors = new HashMap<>();
         e.getBindingResult().getFieldErrors().forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
+
         return ResponseEntity.status(errorCode.getHttpStatus())
                 .body(ApiResponse.builder()
                         .success(false)
                         .message(errorCode.getMessage())
                         .code(errorCode.getCode())
                         .data(errors)
-                        .build());
-    }
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiResponse<Object>> illegalArgumentExceptionHandler(IllegalArgumentException e) {
-        ErrorCode errorCode = ErrorCode.INVALID_KEY;
-        return ResponseEntity.status(errorCode.getHttpStatus())
-                .body(ApiResponse.builder()
-                        .success(false)
-                        .message(errorCode.getMessage())
-                        .code(errorCode.getCode())
                         .build());
     }
 }

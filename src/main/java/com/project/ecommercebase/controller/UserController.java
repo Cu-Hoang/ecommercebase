@@ -1,51 +1,58 @@
 package com.project.ecommercebase.controller;
 
-import java.util.concurrent.CompletableFuture;
-
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.SendResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import com.project.ecommercebase.constant.Endpoint;
-import com.project.ecommercebase.dto.request.UserRequest;
+import com.project.ecommercebase.dto.request.EmailRequest;
+import com.project.ecommercebase.dto.request.EmailVerificationRequest;
+import com.project.ecommercebase.dto.request.UserRegisterRequest;
 import com.project.ecommercebase.dto.response.ApiResponse;
 import com.project.ecommercebase.dto.response.UserResponse;
+import com.project.ecommercebase.enums.Role;
 import com.project.ecommercebase.service.impl.UserServiceImpl;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping(Endpoint.ENDPOINT_USER)
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Slf4j
 public class UserController {
     UserServiceImpl userService;
 
-    KafkaTemplate<String, String> kafkaTemplate;
-
     @PostMapping(value = Endpoint.UserEndpoint.CREATE_USER)
-    public ApiResponse<UserResponse> createUser(@RequestBody UserRequest userRequest) {
-        return ApiResponse.<UserResponse>builder()
-                .data(userService.createCustomer(userRequest))
-                .message("Created user successfully")
+    public ApiResponse<String> createEmailVerificationCode(@RequestBody @Validated EmailRequest emailRequest) {
+        return ApiResponse.<String>builder()
+                .message(userService.createEmailVerificationCode(emailRequest))
                 .build();
     }
 
-    @PostMapping(value = "/sendmail")
-    public ApiResponse<String> sendMail(@RequestBody String email) {
-        CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send("mail_topic", email);
-        future.whenComplete((result, ex) -> {
-            if (ex == null) {
-                System.out.println("Sent message=[" + email + "] with offset=["
-                        + result.getRecordMetadata().offset() + "]");
-            } else {
-                System.out.println("Unable to send message=[" + email + "] due to : " + ex.getMessage());
-            }
-        });
+    @PostMapping(value = Endpoint.UserEndpoint.CHECK_CODE)
+    public ApiResponse<String> checkEmailVerificationCode(
+            @RequestBody @Validated EmailVerificationRequest emailVerificationRequest) {
         return ApiResponse.<String>builder()
-                .message("Mail is sent successfully.")
+                .message(userService.verifyEmail(emailVerificationRequest))
+                .build();
+    }
+
+    @PostMapping(value = Endpoint.UserEndpoint.REGISTER_CUSTOMER)
+    public ApiResponse<UserResponse> registerCustomer(@RequestBody @Validated UserRegisterRequest userRegisterRequest) {
+        return ApiResponse.<UserResponse>builder()
+                .message("Customer registered successfully")
+                .data(userService.registerUser(userRegisterRequest, Role.CUSTOMER))
+                .build();
+    }
+
+    @PostMapping(value = Endpoint.UserEndpoint.REGISTER_VENDOR)
+    public ApiResponse<UserResponse> registerVendor(@RequestBody @Validated UserRegisterRequest userRegisterRequest) {
+        return ApiResponse.<UserResponse>builder()
+                .message("Vendor registered successfully")
+                .data(userService.registerUser(userRegisterRequest, Role.VENDOR))
                 .build();
     }
 }
