@@ -17,9 +17,7 @@ public interface UserService {
 
     UserResponse registerUser(UserRegisterRequest userRegisterRequest, Role role);
 
-    UserResponse updateToVendor();
-
-    UserResponse createVendor(EmailRequest emailRequest);
+    UserResponse updateToVendor(EmailRequest emailRequest);
 
     List<UserResponse> getAllUsers();
 

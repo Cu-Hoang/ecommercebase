@@ -23,6 +23,10 @@ public class RefreshToken extends BaseEntity {
 
     String code;
 
+    String jwtID;
+
+    String userAgent;
+
     @Builder.Default
     LocalDateTime expiredAt = LocalDateTime.now().plusYears(1);
 

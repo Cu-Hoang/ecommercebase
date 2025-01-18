@@ -7,6 +7,7 @@ import java.util.concurrent.CompletableFuture;
 
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -75,7 +76,7 @@ public class UserServiceImpl implements UserService, BaseService<User, UUID, Use
             });
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new AppException(ErrorCode.NOT_SENDING_CODE);
+            throw new AppException(ErrorCode.CANNOT_SENDING_CODE);
         }
         return "Sent code successfully";
     }
@@ -110,41 +111,54 @@ public class UserServiceImpl implements UserService, BaseService<User, UUID, Use
         User user = userRepository
                 .findByEmail(userRegisterRequest.email())
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_VERIFIED_EMAIL));
-        log.info("" + user);
         if (user.getAccountStatus() != AccountStatus.PENDING) throw new AppException(ErrorCode.UNCLASSIFIED_EXCEPTION);
 
         userMapper.registerUser(user, userRegisterRequest);
         user.setPassword(passwordEncoder.encode(userRegisterRequest.password()));
         user.setAccountStatus(AccountStatus.ACTIVE);
-        HashSet<String> roles = new HashSet<>();
-        roles.add(role.name());
+        Set<Role> roles = new HashSet<>();
+        roles.add(role);
         user.setRoles(roles);
 
         return userMapper.userToUserResponse(userRepository.save(user));
     }
 
     @Override
-    public UserResponse updateToVendor() {
-        return null;
+    public UserResponse updateToVendor(EmailRequest emailRequest) {
+        User user = userRepository
+                .findByEmail(emailRequest.email())
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_USER));
+        if (user.getAccountStatus() != AccountStatus.ACTIVE) throw new AppException(ErrorCode.NOT_EXISTED_USER);
+        if (user.getRoles().contains(Role.VENDOR)) throw new AppException(ErrorCode.BE_VENDOR);
+
+        Set<Role> roles = user.getRoles();
+        roles.add(Role.VENDOR);
+        user.setRoles(roles);
+
+        return userMapper.userToUserResponse(userRepository.save(user));
     }
 
-    @Override
-    public UserResponse createVendor(EmailRequest emailRequest) {
-        return null;
-    }
-
+    @PreAuthorize("hasRole('CUSTOMER')")
     @Override
     public List<UserResponse> getAllUsers() {
-        return List.of();
+        List<User> users = userRepository.findAll();
+        return users.stream().map(userMapper::userToUserResponse).toList();
     }
 
     @Override
     public UserResponse getUserById(UUID id) {
-        return null;
+        User user = userRepository
+                .findByIdAndAccountStatus(id, AccountStatus.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_USER));
+        return userMapper.userToUserResponse(user);
     }
 
     @Override
     public UserResponse updateUser(UUID id, UserUpdateRequest userUpdateRequest) {
-        return null;
+        User user = userRepository
+                .findByIdAndAccountStatus(id, AccountStatus.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_USER));
+        userMapper.updaterUser(user, userUpdateRequest);
+        return userMapper.userToUserResponse(userRepository.save(user));
     }
 }

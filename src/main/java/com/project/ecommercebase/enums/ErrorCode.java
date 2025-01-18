@@ -11,12 +11,15 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public enum ErrorCode {
-    USER_EXISTED(1001, "User existed", HttpStatus.BAD_REQUEST),
-    INVALID_FIELD(1002, "Invalid field.", HttpStatus.BAD_REQUEST),
-    NOT_SENDING_CODE(1003, "Cannot send code, please try again.", HttpStatus.BAD_REQUEST),
-    NOT_VERIFIED_EMAIL(1004, "Email has not been verified yet.", HttpStatus.BAD_REQUEST),
+    EXISTED_USER(1001, "User existed", HttpStatus.BAD_REQUEST),
+    NOT_EXISTED_USER(1002, "User did not exist", HttpStatus.BAD_REQUEST),
+    INVALID_FIELD(1003, "Invalid field.", HttpStatus.BAD_REQUEST),
+    CANNOT_SENDING_CODE(1004, "Cannot send code, please try again.", HttpStatus.BAD_REQUEST),
+    NOT_VERIFIED_EMAIL(1005, "Email has not been verified yet.", HttpStatus.BAD_REQUEST),
+    BE_VENDOR(1006, "You have already been a vendor.", HttpStatus.BAD_REQUEST),
     UNAUTHENTICATED(1007, "Unauthenticated.", HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED(1008, "You do not have permission.", HttpStatus.FORBIDDEN),
+    LOGOUT(1009, "You logged out, please log in.", HttpStatus.BAD_REQUEST),
     UNCLASSIFIED_EXCEPTION(9999, "Unclassified exception", HttpStatus.INTERNAL_SERVER_ERROR);
     int code;
     String message;

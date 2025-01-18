@@ -26,7 +26,7 @@ public class RedisServiceImpl implements RedisService {
             redisTemplate.opsForValue().set(key, value, Duration.ofSeconds(timeoutInSeconds));
         } catch (Exception e) {
             e.printStackTrace();
-            throw new AppException(ErrorCode.NOT_SENDING_CODE);
+            throw new AppException(ErrorCode.CANNOT_SENDING_CODE);
         }
     }
 
