@@ -30,7 +30,18 @@ import com.project.ecommercebase.exception.JwtCustomAuthenticationEntryPoint;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
-    private static final String[] PUBLIC_ENDPOINTS = {"/auths/login", "/auths/generate-new-token"};
+    private static final String[] PUBLIC_ENDPOINTS = {
+        "/users/register",
+        "/users/register/verify-email-code",
+        "/users/register/customer",
+        "/users/register/vendor",
+        "/auths/email-otp-password",
+        "/auths/login-otp",
+        "/auths/email-otp-reset-password",
+        "/auths/reset-password",
+        "/auths/login-password",
+        "/auths/generate-new-token"
+    };
 
     @Value("${spring.jwt.key}")
     private String key;

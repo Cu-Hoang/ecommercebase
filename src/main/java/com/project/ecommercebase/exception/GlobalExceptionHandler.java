@@ -13,17 +13,6 @@ import com.project.ecommercebase.enums.ErrorCode;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
-    //    @ExceptionHandler(Exception.class)
-    //    public ResponseEntity<ApiResponse<Object>> runtimeExceptionHandler(Exception e) {
-    //        ErrorCode errorCode = ErrorCode.UNCLASSIFIED_EXCEPTION;
-    //        return ResponseEntity.status(errorCode.getHttpStatus())
-    //                .body(ApiResponse.builder()
-    //                        .success(false)
-    //                        .message(errorCode.getMessage())
-    //                        .code(errorCode.getCode())
-    //                        .build());
-    //    }
-
     @ExceptionHandler(AppException.class)
     public ResponseEntity<ApiResponse<Object>> appExceptionHandler(AppException e) {
         ErrorCode errorCode = e.getErrorCode();

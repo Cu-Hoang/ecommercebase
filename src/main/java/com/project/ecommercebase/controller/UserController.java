@@ -7,10 +7,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import com.project.ecommercebase.constant.Endpoint;
-import com.project.ecommercebase.dto.request.EmailRequest;
-import com.project.ecommercebase.dto.request.EmailVerificationRequest;
-import com.project.ecommercebase.dto.request.UserRegisterRequest;
-import com.project.ecommercebase.dto.request.UserUpdateRequest;
+import com.project.ecommercebase.dto.request.*;
 import com.project.ecommercebase.dto.response.ApiResponse;
 import com.project.ecommercebase.dto.response.UserResponse;
 import com.project.ecommercebase.enums.Role;
@@ -29,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 public class UserController {
     UserService userService;
 
-    @PostMapping(value = Endpoint.UserEndpoint.CREATE_USER)
+    @PostMapping(value = Endpoint.UserEndpoint.REGISTER)
     public ApiResponse<String> createEmailVerificationCode(@RequestBody @Validated EmailRequest emailRequest) {
         return ApiResponse.<String>builder()
                 .message(userService.createEmailVerificationCode(emailRequest))
@@ -87,6 +84,14 @@ public class UserController {
             @PathVariable("id") UUID id, @RequestBody @Validated UserUpdateRequest userUpdateRequest) {
         return ApiResponse.<UserResponse>builder()
                 .data(userService.updateUser(id, userUpdateRequest))
+                .build();
+    }
+
+    @PutMapping(value = Endpoint.UserEndpoint.UPDATE_USER_PASSWORD)
+    public ApiResponse<String> updatePassword(
+            @PathVariable("id") UUID id, @RequestBody @Validated UpdatePasswordRequest updatePasswordRequest) {
+        return ApiResponse.<String>builder()
+                .message(userService.updatePassword(id, updatePasswordRequest))
                 .build();
     }
 }

@@ -27,8 +27,7 @@ public class RefreshToken extends BaseEntity {
 
     String userAgent;
 
-    @Builder.Default
-    LocalDateTime expiredAt = LocalDateTime.now().plusYears(1);
+    LocalDateTime expiredAt;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)

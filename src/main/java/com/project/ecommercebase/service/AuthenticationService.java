@@ -5,22 +5,25 @@ import java.util.Map;
 import jakarta.servlet.http.HttpServletRequest;
 
 import com.project.ecommercebase.data.entity.User;
-import com.project.ecommercebase.dto.request.LoginRequest;
-import com.project.ecommercebase.dto.request.RefreshTokenRequest;
+import com.project.ecommercebase.dto.request.*;
 
 public interface AuthenticationService {
-    Map<String, String> login(LoginRequest loginRequest, String userAgent);
+    Map<String, String> loginWithPassword(LoginRequest loginRequest, String userAgent);
 
     String generateAccessToken(User user, String userAgent, String jwtID);
 
     Map<String, String> generateNewToken(
             HttpServletRequest httpServletRequest, RefreshTokenRequest refreshTokenRequest);
 
-    Boolean verifyRefreshToken(LoginRequest loginRequest, String token);
+    String logout(HttpServletRequest httpServletRequest);
 
-    void refreshAccessToken(LoginRequest loginRequest, String token);
+    String logoutAllDevices(HttpServletRequest httpServletRequest);
 
-    void logout(LoginRequest loginRequest);
+    String createEmailOtpPassword(EmailRequest emailRequest);
 
-    void logoutAll(LoginRequest loginRequest);
+    Map<String, String> loginWithOTP(LoginOtpRequest loginOtpRequest, String userAgent);
+
+    String createEmailOtpResetPassword(EmailRequest emailRequest);
+
+    String resetPassword(ResetPasswordRequest resetPasswordRequest);
 }

@@ -1,29 +1,22 @@
 package com.project.ecommercebase.service.impl;
 
-import java.security.SecureRandom;
 import java.util.*;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.SendResult;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.project.ecommercebase.data.entity.User;
 import com.project.ecommercebase.data.repository.UserRepository;
-import com.project.ecommercebase.dto.request.EmailRequest;
-import com.project.ecommercebase.dto.request.EmailVerificationRequest;
-import com.project.ecommercebase.dto.request.UserRegisterRequest;
-import com.project.ecommercebase.dto.request.UserUpdateRequest;
+import com.project.ecommercebase.dto.request.*;
 import com.project.ecommercebase.dto.response.UserResponse;
 import com.project.ecommercebase.enums.AccountStatus;
 import com.project.ecommercebase.enums.ErrorCode;
 import com.project.ecommercebase.enums.Role;
 import com.project.ecommercebase.exception.AppException;
 import com.project.ecommercebase.mapper.UserMapper;
-import com.project.ecommercebase.service.BaseService;
+import com.project.ecommercebase.service.MailService;
 import com.project.ecommercebase.service.UserService;
 
 import lombok.AccessLevel;
@@ -35,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 @Slf4j
-public class UserServiceImpl implements UserService, BaseService<User, UUID, UserRepository> {
+public class UserServiceImpl implements UserService {
 
     UserRepository userRepository;
 
@@ -45,40 +38,16 @@ public class UserServiceImpl implements UserService, BaseService<User, UUID, Use
 
     RedisServiceImpl redisService;
 
-    KafkaTemplate<String, Object> kafkaTemplate;
-
-    @Override
-    public UserRepository getRepository() {
-        return this.userRepository;
-    }
+    MailService mailService;
 
     @Override
     public String createEmailVerificationCode(EmailRequest emailRequest) {
-        SecureRandom secureRandom = new SecureRandom();
-        int verificationCode = 100000 + secureRandom.nextInt(900000);
-
-        String email = emailRequest.email();
-        StringBuilder key = new StringBuilder();
-        key.append("verifying_");
-        key.append(email);
-        redisService.setKeyWithTTL(String.valueOf(key), String.valueOf(verificationCode), 70);
-
-        try {
-            CompletableFuture<SendResult<String, Object>> future =
-                    kafkaTemplate.send("mail_topic", new EmailVerificationRequest(email, verificationCode));
-            future.whenComplete((result, ex) -> {
-                if (ex == null) {
-                    log.info("Sent message=[" + email + "] with offset=["
-                            + result.getRecordMetadata().offset() + "]");
-                } else {
-                    log.error("Unable to send message=[" + email + "] due to : " + ex.getMessage());
-                }
-            });
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            throw new AppException(ErrorCode.CANNOT_SENDING_CODE);
-        }
-        return "Sent code successfully";
+        return mailService.createCode(
+                emailRequest.email(),
+                "verifying_",
+                305,
+                "Email Verification",
+                "This code will expire within 5 minutes.");
     }
 
     @Override
@@ -88,8 +57,8 @@ public class UserServiceImpl implements UserService, BaseService<User, UUID, Use
 
         Optional<User> user = userRepository.findByEmail(email);
         if (user.isPresent()) {
-            if (user.get().getAccountStatus() == AccountStatus.PENDING) return "Email already verifies";
-            else if (user.get().getAccountStatus() == AccountStatus.ACTIVE) return "Email already registers";
+            if (user.get().getAccountStatus() == AccountStatus.PENDING) return "Email already verifies.";
+            else if (user.get().getAccountStatus() == AccountStatus.ACTIVE) return "Email already registers.";
         }
 
         StringBuilder key = new StringBuilder();
@@ -101,9 +70,9 @@ public class UserServiceImpl implements UserService, BaseService<User, UUID, Use
             User newUser = new User();
             newUser.setEmail(email);
             userRepository.save(newUser);
-            return "Verify email successfully";
+            return "Verify email successfully.";
         }
-        return "Verify email failed";
+        return "Verify email failed.";
     }
 
     @Override
@@ -160,5 +129,17 @@ public class UserServiceImpl implements UserService, BaseService<User, UUID, Use
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_USER));
         userMapper.updaterUser(user, userUpdateRequest);
         return userMapper.userToUserResponse(userRepository.save(user));
+    }
+
+    @Override
+    public String updatePassword(UUID id, UpdatePasswordRequest updatePasswordRequest) {
+        User user = userRepository
+                .findByIdAndAccountStatus(id, AccountStatus.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_USER));
+        boolean authenticated = passwordEncoder.matches(updatePasswordRequest.oldPassword(), user.getPassword());
+        if (!authenticated) throw new AppException(ErrorCode.UNAUTHENTICATED);
+        user.setPassword(passwordEncoder.encode(updatePasswordRequest.newPassword()));
+        userRepository.save(user);
+        return "Update password successfully";
     }
 }

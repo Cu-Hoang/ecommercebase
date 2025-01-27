@@ -20,6 +20,7 @@ public enum ErrorCode {
     UNAUTHENTICATED(1007, "Unauthenticated.", HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED(1008, "You do not have permission.", HttpStatus.FORBIDDEN),
     LOGOUT(1009, "You logged out, please log in.", HttpStatus.BAD_REQUEST),
+    INVALID_OTP(1010, "Otp is invalid", HttpStatus.BAD_REQUEST),
     UNCLASSIFIED_EXCEPTION(9999, "Unclassified exception", HttpStatus.INTERNAL_SERVER_ERROR);
     int code;
     String message;

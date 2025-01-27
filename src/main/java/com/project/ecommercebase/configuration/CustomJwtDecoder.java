@@ -20,6 +20,8 @@ import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.SignedJWT;
 import com.project.ecommercebase.enums.ErrorCode;
 import com.project.ecommercebase.exception.AppException;
+import com.project.ecommercebase.service.RedisService;
+import com.project.ecommercebase.service.impl.AuthenticationServiceImpl;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,8 +33,11 @@ public class CustomJwtDecoder implements JwtDecoder {
 
     private final HttpServletRequest httpServletRequest;
 
-    public CustomJwtDecoder(HttpServletRequest httpServletRequest) {
+    private final RedisService redisService;
+
+    public CustomJwtDecoder(HttpServletRequest httpServletRequest, RedisService redisService) {
         this.httpServletRequest = httpServletRequest;
+        this.redisService = redisService;
     }
 
     @Override
@@ -42,10 +47,13 @@ public class CustomJwtDecoder implements JwtDecoder {
             SignedJWT signedJWT = SignedJWT.parse(token);
             Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
             String userAgent = signedJWT.getJWTClaimsSet().getStringClaim("User-Agent");
+            String userId = signedJWT.getJWTClaimsSet().getSubject();
+            StringBuilder keyAT = AuthenticationServiceImpl.buildAccessKey(userId, userAgent);
             boolean verified = signedJWT.verify(jwsVerifier);
             if (!verified
                     || !expirationTime.after(new Date())
-                    || !httpServletRequest.getHeader("User-Agent").equals(userAgent)) {
+                    || !httpServletRequest.getHeader("User-Agent").equals(userAgent)
+                    || redisService.getValue(String.valueOf(keyAT)) == null) {
                 throw new AppException(ErrorCode.UNAUTHENTICATED);
             }
         } catch (JOSEException | ParseException e) {

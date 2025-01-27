@@ -1,14 +1,15 @@
 package com.project.ecommercebase.service.impl;
 
+import java.text.ParseException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -16,15 +17,17 @@ import org.springframework.util.CollectionUtils;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import com.project.ecommercebase.data.entity.RefreshToken;
 import com.project.ecommercebase.data.entity.User;
 import com.project.ecommercebase.data.repository.RefreshTokenRepository;
 import com.project.ecommercebase.data.repository.UserRepository;
-import com.project.ecommercebase.dto.request.LoginRequest;
-import com.project.ecommercebase.dto.request.RefreshTokenRequest;
+import com.project.ecommercebase.dto.request.*;
+import com.project.ecommercebase.enums.AccountStatus;
 import com.project.ecommercebase.enums.ErrorCode;
 import com.project.ecommercebase.exception.AppException;
 import com.project.ecommercebase.service.AuthenticationService;
+import com.project.ecommercebase.service.MailService;
 import com.project.ecommercebase.service.RedisService;
 
 import lombok.AccessLevel;
@@ -56,28 +59,26 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     RefreshTokenRepository refreshTokenRepository;
 
+    PasswordEncoder passwordEncoder;
+
+    MailService mailService;
+
     @Override
-    public Map<String, String> login(LoginRequest loginRequest, String userAgent) {
+    public Map<String, String> loginWithPassword(LoginRequest loginRequest, String userAgent) {
         User user = userRepository
-                .findByEmail(loginRequest.email())
+                .findByEmailAndAccountStatus(loginRequest.email(), AccountStatus.ACTIVE)
                 .orElseThrow(() -> new AppException(ErrorCode.UNAUTHORIZED));
 
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         boolean authenticated = passwordEncoder.matches(loginRequest.password(), user.getPassword());
         if (!authenticated) throw new AppException(ErrorCode.UNAUTHENTICATED);
 
-        StringBuilder keyAT = new StringBuilder();
         String userId = user.getId().toString();
         String jwtID = UUID.randomUUID().toString();
         String refreshToken = UUID.randomUUID().toString();
+
         Map<String, String> map = new HashMap<>();
-        keyAT.append(userId);
-        keyAT.append(":");
-        keyAT.append(userAgent);
         map.put("access token", generateAccessToken(user, userAgent, jwtID));
         map.put("refresh token", refreshToken);
-
-        redisService.setKeyWithTTL(String.valueOf(keyAT), jwtID, Integer.valueOf(accessDuration) + 5);
 
         Optional<RefreshToken> refreshTokenOptional = refreshTokenRepository.findByUserAgent(userAgent);
         if (refreshTokenOptional.isPresent()) {
@@ -96,6 +97,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     .build();
             refreshTokenRepository.save(rt);
         }
+
+        StringBuilder keyAT = this.buildAccessKey(userId, userAgent);
+        redisService.setKeyWithTTL(String.valueOf(keyAT), jwtID, Integer.valueOf(accessDuration) + 5);
         return map;
     }
 
@@ -106,7 +110,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
                 .issuer("ecommercebase")
                 .issueTime(new Date())
-                .subject(user.getEmail())
+                .subject(user.getId().toString())
                 .expirationTime(new Date(Instant.now()
                         .plus(Long.parseLong(accessDuration), ChronoUnit.SECONDS)
                         .toEpochMilli()))
@@ -144,41 +148,171 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         String userAgent = httpServletRequest.getHeader("User-Agent");
         if (!refreshToken.getUserAgent().equals(userAgent)) throw new AppException(ErrorCode.UNAUTHENTICATED);
-        if (refreshToken.getExpiredAt().isBefore(LocalDateTime.now())) throw new AppException(ErrorCode.LOGOUT);
+        if (refreshToken.getExpiredAt().isBefore(LocalDateTime.now())) {
+            refreshTokenRepository.delete(refreshToken);
+            throw new AppException(ErrorCode.LOGOUT);
+        }
 
-        StringBuilder keyAT = new StringBuilder();
-        String userId = refreshToken.getUser().getId().toString();
         User user = refreshToken.getUser();
+        String userId = user.getId().toString();
         String newRefreshToken = UUID.randomUUID().toString();
         String jwtID = UUID.randomUUID().toString();
+
         Map<String, String> map = new HashMap<>();
-        keyAT.append(userId);
-        keyAT.append(":");
-        keyAT.append(userAgent);
         map.put("access token", generateAccessToken(user, userAgent, jwtID));
         map.put("refresh token", newRefreshToken);
 
+        StringBuilder keyAT = this.buildAccessKey(userId, userAgent);
         redisService.setKeyWithTTL(String.valueOf(keyAT), jwtID, Integer.valueOf(accessDuration) + 5);
 
         refreshToken.setCode(newRefreshToken);
         refreshToken.setJwtID(jwtID);
         refreshToken.setExpiredAt(LocalDateTime.now().plus(Long.parseLong(refreshDuration), ChronoUnit.SECONDS));
         refreshTokenRepository.save(refreshToken);
-
         return map;
     }
 
     @Override
-    public Boolean verifyRefreshToken(LoginRequest loginRequest, String token) {
-        return null;
+    public String logout(HttpServletRequest httpServletRequest) {
+        String header = httpServletRequest.getHeader("Authorization");
+        if (header == null || !header.startsWith("Bearer ")) throw new AppException(ErrorCode.UNAUTHENTICATED);
+        String token = header.substring(7);
+        try {
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            String userId = signedJWT.getJWTClaimsSet().getSubject();
+            String jwtID = signedJWT.getJWTClaimsSet().getJWTID();
+            if (!userRepository.existsByIdAndAccountStatus(UUID.fromString(userId), AccountStatus.ACTIVE))
+                throw new AppException(ErrorCode.NOT_EXISTED_USER);
+            String userAgent = signedJWT.getJWTClaimsSet().getStringClaim("User-Agent");
+
+            RefreshToken refreshToken =
+                    refreshTokenRepository.findByJwtID(jwtID).orElseThrow(() -> new AppException(ErrorCode.LOGOUT));
+            refreshTokenRepository.delete(refreshToken);
+
+            StringBuilder keyAT = this.buildAccessKey(userId, userAgent);
+            redisService.delete(String.valueOf(keyAT));
+        } catch (ParseException e) {
+            log.error(e.getMessage());
+        }
+        return "Log out successfully";
     }
 
     @Override
-    public void refreshAccessToken(LoginRequest loginRequest, String token) {}
+    @Transactional
+    public String logoutAllDevices(HttpServletRequest httpServletRequest) {
+        String header = httpServletRequest.getHeader("Authorization");
+        if (header == null || !header.startsWith("Bearer ")) throw new AppException(ErrorCode.UNAUTHENTICATED);
+        String token = header.substring(7);
+        try {
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            String userId = signedJWT.getJWTClaimsSet().getSubject();
+            String jwtID = signedJWT.getJWTClaimsSet().getJWTID();
+            if (!userRepository.existsByIdAndAccountStatus(UUID.fromString(userId), AccountStatus.ACTIVE))
+                throw new AppException(ErrorCode.NOT_EXISTED_USER);
+
+            if (refreshTokenRepository.existsByJwtID(jwtID))
+                refreshTokenRepository.deleteAllByUserId(UUID.fromString(userId));
+            else throw new AppException(ErrorCode.LOGOUT);
+
+            StringBuilder keyAT = this.buildAccessKey(userId.toString(), "*");
+            redisService.deleteByPattern(String.valueOf(keyAT));
+        } catch (ParseException e) {
+            log.error(e.getMessage());
+        }
+        return "Log out all devices successfully";
+    }
 
     @Override
-    public void logout(LoginRequest loginRequest) {}
+    public String createEmailOtpPassword(EmailRequest emailRequest) {
+        return mailService.createCode(
+                emailRequest.email(), "otppassword_", 125, "OTP Password", "This code will expire within 2 minutes.");
+    }
 
     @Override
-    public void logoutAll(LoginRequest loginRequest) {}
+    public Map<String, String> loginWithOTP(LoginOtpRequest loginOtpRequest, String userAgent) {
+        User user = userRepository
+                .findByEmailAndAccountStatus(loginOtpRequest.email(), AccountStatus.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHORIZED));
+
+        String email = loginOtpRequest.email();
+        Integer otp = loginOtpRequest.otp();
+
+        StringBuilder key = new StringBuilder();
+        key.append("otppassword_");
+        key.append(email);
+
+        if (redisService.getValue(String.valueOf(key)) == null
+                || !redisService.getValue(String.valueOf(key)).equals(String.valueOf(otp)))
+            throw new AppException(ErrorCode.INVALID_OTP);
+
+        String userId = user.getId().toString();
+        String jwtID = UUID.randomUUID().toString();
+        String refreshToken = UUID.randomUUID().toString();
+
+        Map<String, String> map = new HashMap<>();
+        map.put("access token", generateAccessToken(user, userAgent, jwtID));
+        map.put("refresh token", refreshToken);
+
+        Optional<RefreshToken> refreshTokenOptional = refreshTokenRepository.findByUserAgent(userAgent);
+        if (refreshTokenOptional.isPresent()) {
+            RefreshToken rt = refreshTokenOptional.get();
+            rt.setCode(refreshToken);
+            rt.setJwtID(jwtID);
+            rt.setExpiredAt(LocalDateTime.now().plus(Long.parseLong(refreshDuration), ChronoUnit.SECONDS));
+            refreshTokenRepository.save(rt);
+        } else {
+            RefreshToken rt = RefreshToken.builder()
+                    .code(refreshToken)
+                    .expiredAt(LocalDateTime.now().plus(Long.parseLong(refreshDuration), ChronoUnit.SECONDS))
+                    .jwtID(jwtID)
+                    .userAgent(userAgent)
+                    .user(user)
+                    .build();
+            refreshTokenRepository.save(rt);
+        }
+
+        StringBuilder keyAT = this.buildAccessKey(userId, userAgent);
+        redisService.setKeyWithTTL(String.valueOf(keyAT), jwtID, Integer.valueOf(accessDuration) + 5);
+        return map;
+    }
+
+    @Override
+    public String createEmailOtpResetPassword(EmailRequest emailRequest) {
+        return mailService.createCode(
+                emailRequest.email(),
+                "otpresetpassword_",
+                305,
+                "OTP Reset Password",
+                "This code will expire within 5 minutes.");
+    }
+
+    @Override
+    public String resetPassword(ResetPasswordRequest resetPasswordRequest) {
+        User user = userRepository
+                .findByEmailAndAccountStatus(resetPasswordRequest.email(), AccountStatus.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHORIZED));
+
+        String email = resetPasswordRequest.email();
+        Integer otp = resetPasswordRequest.otp();
+
+        StringBuilder key = new StringBuilder();
+        key.append("otpresetpassword_");
+        key.append(email);
+
+        if (redisService.getValue(String.valueOf(key)) == null
+                || !redisService.getValue(String.valueOf(key)).equals(String.valueOf(otp)))
+            throw new AppException(ErrorCode.INVALID_OTP);
+
+        user.setPassword(passwordEncoder.encode(resetPasswordRequest.newPassword()));
+        userRepository.save(user);
+        return "Update password successfully";
+    }
+
+    public static StringBuilder buildAccessKey(String userId, String userAgent) {
+        StringBuilder keyAT = new StringBuilder();
+        keyAT.append(userId);
+        keyAT.append(":");
+        keyAT.append(userAgent);
+        return keyAT;
+    }
 }
