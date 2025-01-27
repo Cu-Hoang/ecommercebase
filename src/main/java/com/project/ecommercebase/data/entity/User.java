@@ -10,6 +10,7 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.UuidGenerator;
 
 import com.project.ecommercebase.enums.AccountStatus;
+import com.project.ecommercebase.enums.Role;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -50,7 +51,8 @@ public class User extends BaseEntity {
 
     String avatar;
 
-    Set<String> roles;
+    @Enumerated(EnumType.STRING)
+    Set<Role> roles;
 
     @OneToOne(cascade = CascadeType.ALL, targetEntity = Shop.class)
     @JoinTable(

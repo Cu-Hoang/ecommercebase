@@ -3,7 +3,7 @@ package com.project.ecommercebase.listener;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
-import com.project.ecommercebase.dto.request.EmailVerificationRequest;
+import com.project.ecommercebase.dto.request.EmailMessage;
 import com.project.ecommercebase.service.MailService;
 
 import lombok.AccessLevel;
@@ -19,8 +19,11 @@ public class MailListener {
     MailService mailService;
 
     @KafkaListener(topics = "mail_topic", groupId = "mail_group")
-    public void listenGroupMail(EmailVerificationRequest emailVerify) {
+    public void listenGroupMail(EmailMessage emailMessage) {
         mailService.sendSimpleMessage(
-                emailVerify.email(), "Email Verification", String.valueOf(emailVerify.verificationCode()));
+                emailMessage.email(),
+                emailMessage.subject(),
+                String.valueOf(emailMessage.code()),
+                emailMessage.content());
     }
 }

@@ -23,8 +23,11 @@ public class RefreshToken extends BaseEntity {
 
     String code;
 
-    @Builder.Default
-    LocalDateTime expiredAt = LocalDateTime.now().plusYears(1);
+    String jwtID;
+
+    String userAgent;
+
+    LocalDateTime expiredAt;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)

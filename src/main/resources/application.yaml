@@ -6,11 +6,13 @@ server:
 spring:
   application:
     name: ecommercebase
+
   datasource:
     url: jdbc:postgresql://localhost:5432/ecommerce
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -21,6 +23,7 @@ spring:
         globally_quoted_identifiers: true
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+
   mail:
     host: smtp.gmail.com
     port: 587
@@ -33,6 +36,12 @@ spring:
           starttls:
             enable: true
             required: true
+
+  jwt:
+    key: mOUjM9gfE8+PffkSkrGE8tMxajYk7eD3T98YpMFjGSzsTGB5f4/WpqhBKifDcIHu
+    access-duration: 120
+    refresh-duration: 604800
+
   kafka:
     bootstrap-servers: localhost:9092
     producer:
@@ -55,6 +64,11 @@ logging:
         data:
           redis:
             DEBUG
+        security:
+          web:
+            access: DEBUG
+            authentication: DEBUG
+
 
 
 
