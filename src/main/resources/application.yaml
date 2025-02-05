@@ -39,7 +39,7 @@ spring:
 
   jwt:
     key: mOUjM9gfE8+PffkSkrGE8tMxajYk7eD3T98YpMFjGSzsTGB5f4/WpqhBKifDcIHu
-    access-duration: 120
+    access-duration: 86400
     refresh-duration: 604800
 
   kafka:

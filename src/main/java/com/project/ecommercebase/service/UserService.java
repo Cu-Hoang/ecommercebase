@@ -14,7 +14,9 @@ public interface UserService {
 
     UserResponse registerUser(UserRegisterRequest userRegisterRequest, Role role);
 
-    UserResponse updateToVendor(EmailRequest emailRequest);
+    String updateToVendor(EmailRequest emailRequest);
+
+    String updateShop(UUID id, UpdateShopRequest updateShopRequest);
 
     List<UserResponse> getAllUsers();
 

@@ -4,7 +4,6 @@ import static org.springframework.security.config.Customizer.withDefaults;
 
 import java.util.Arrays;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -42,9 +41,6 @@ public class SecurityConfig {
         "/auths/login-password",
         "/auths/generate-new-token"
     };
-
-    @Value("${spring.jwt.key}")
-    private String key;
 
     private final CustomJwtDecoder customJwtDecoder;
 

@@ -7,8 +7,8 @@ import jakarta.persistence.*;
 
 import org.hibernate.annotations.UuidGenerator;
 
-import com.project.ecommercebase.enums.ShopTag;
 import com.project.ecommercebase.enums.Status;
+import com.project.ecommercebase.enums.Visibility;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -19,28 +19,27 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Data
 @Builder
-public class Shop extends BaseEntity {
+public class Category extends BaseEntity {
     @Id
     @UuidGenerator(style = UuidGenerator.Style.TIME)
     UUID id;
 
     String name;
 
-    String province;
+    UUID parent_id;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
-    ShopTag shopTag;
+    Visibility visibility = Visibility.ON;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
     Status status = Status.ACTIVE;
 
-    @OneToOne(mappedBy = "shop")
-    User user;
-
-    @OneToMany(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = Product.class)
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = Product.class)
     Set<Product> products;
 
-    @OneToMany(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = Category.class)
-    Set<Category> categories;
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "shop_id", referencedColumnName = "id", nullable = false)
+    Shop shop;
 }

@@ -3,6 +3,8 @@ package com.project.ecommercebase.constant;
 public class Endpoint {
     public static final String ENDPOINT_USER = "/users";
     public static final String ENDPOINT_AUTH = "/auths";
+    public static final String ENDPOINT_SHOP = "/shops";
+    public static final String ENDPOINT_CATEGORY = "/categories";
 
     public static class UserEndpoint {
         public static final String REGISTER = "/register";
@@ -13,6 +15,7 @@ public class Endpoint {
         public static final String GET_BY_ID = "/{id}";
         public static final String UPDATE_USER = "/update/{id}";
         public static final String UPDATE_USER_PASSWORD = "/update-password/{id}";
+        public static final String UPDATE_SHOP = "/update-shop/{id}";
     }
 
     public static class AuthEndpoint {
@@ -24,5 +27,13 @@ public class Endpoint {
         public static final String LOGIN_OTP = "/login-otp";
         public static final String EMAIL_OTP_RESET_PASSWORD = "/email-otp-reset-password";
         public static final String RESET_PASSWORD = "/reset-password";
+    }
+
+    public static class ShopEndpoint {}
+
+    public static class CategoryEndpoint {
+        public static final String CREATE_CATEGORY = "/create-category";
+        public static final String CREATE_SUBCATEGORY = "/create-subcategory";
+        public static final String GET_TREE = "/tree";
     }
 }

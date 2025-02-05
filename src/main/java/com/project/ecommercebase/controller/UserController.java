@@ -60,8 +60,7 @@ public class UserController {
     @PostMapping(value = Endpoint.UserEndpoint.UPDATE_TO_VENDOR)
     public ApiResponse<UserResponse> updateYoVendor(@RequestBody @Validated EmailRequest emailRequest) {
         return ApiResponse.<UserResponse>builder()
-                .message("The customer has just been promoted to a vendor successfully.")
-                .data(userService.updateToVendor(emailRequest))
+                .message(userService.updateToVendor(emailRequest))
                 .build();
     }
 
@@ -92,6 +91,14 @@ public class UserController {
             @PathVariable("id") UUID id, @RequestBody @Validated UpdatePasswordRequest updatePasswordRequest) {
         return ApiResponse.<String>builder()
                 .message(userService.updatePassword(id, updatePasswordRequest))
+                .build();
+    }
+
+    @PutMapping(value = Endpoint.UserEndpoint.UPDATE_SHOP)
+    public ApiResponse<String> updateShop(
+            @PathVariable("id") UUID id, @RequestBody @Validated UpdateShopRequest updateShopRequest) {
+        return ApiResponse.<String>builder()
+                .message(userService.updateShop(id, updateShopRequest))
                 .build();
     }
 }

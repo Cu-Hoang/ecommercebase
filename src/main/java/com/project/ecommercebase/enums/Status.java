@@ -1,6 +1,6 @@
 package com.project.ecommercebase.enums;
 
-public enum AccountStatus {
+public enum Status {
     ACTIVE,
     DELETED,
     SUSPENDED,

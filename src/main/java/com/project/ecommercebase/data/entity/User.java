@@ -9,8 +9,8 @@ import jakarta.persistence.*;
 
 import org.hibernate.annotations.UuidGenerator;
 
-import com.project.ecommercebase.enums.AccountStatus;
 import com.project.ecommercebase.enums.Role;
+import com.project.ecommercebase.enums.Status;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -41,7 +41,7 @@ public class User extends BaseEntity {
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
-    AccountStatus accountStatus = AccountStatus.PENDING;
+    Status status = Status.PENDING;
 
     LocalDate dateOfBirth;
 

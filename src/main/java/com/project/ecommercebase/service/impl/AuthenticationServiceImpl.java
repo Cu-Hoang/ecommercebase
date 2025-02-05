@@ -23,8 +23,8 @@ import com.project.ecommercebase.data.entity.User;
 import com.project.ecommercebase.data.repository.RefreshTokenRepository;
 import com.project.ecommercebase.data.repository.UserRepository;
 import com.project.ecommercebase.dto.request.*;
-import com.project.ecommercebase.enums.AccountStatus;
 import com.project.ecommercebase.enums.ErrorCode;
+import com.project.ecommercebase.enums.Status;
 import com.project.ecommercebase.exception.AppException;
 import com.project.ecommercebase.service.AuthenticationService;
 import com.project.ecommercebase.service.MailService;
@@ -66,7 +66,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public Map<String, String> loginWithPassword(LoginRequest loginRequest, String userAgent) {
         User user = userRepository
-                .findByEmailAndAccountStatus(loginRequest.email(), AccountStatus.ACTIVE)
+                .findByEmailAndStatus(loginRequest.email(), Status.ACTIVE)
                 .orElseThrow(() -> new AppException(ErrorCode.UNAUTHORIZED));
 
         boolean authenticated = passwordEncoder.matches(loginRequest.password(), user.getPassword());
@@ -181,7 +181,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             SignedJWT signedJWT = SignedJWT.parse(token);
             String userId = signedJWT.getJWTClaimsSet().getSubject();
             String jwtID = signedJWT.getJWTClaimsSet().getJWTID();
-            if (!userRepository.existsByIdAndAccountStatus(UUID.fromString(userId), AccountStatus.ACTIVE))
+            if (!userRepository.existsByIdAndStatus(UUID.fromString(userId), Status.ACTIVE))
                 throw new AppException(ErrorCode.NOT_EXISTED_USER);
             String userAgent = signedJWT.getJWTClaimsSet().getStringClaim("User-Agent");
 
@@ -207,7 +207,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             SignedJWT signedJWT = SignedJWT.parse(token);
             String userId = signedJWT.getJWTClaimsSet().getSubject();
             String jwtID = signedJWT.getJWTClaimsSet().getJWTID();
-            if (!userRepository.existsByIdAndAccountStatus(UUID.fromString(userId), AccountStatus.ACTIVE))
+            if (!userRepository.existsByIdAndStatus(UUID.fromString(userId), Status.ACTIVE))
                 throw new AppException(ErrorCode.NOT_EXISTED_USER);
 
             if (refreshTokenRepository.existsByJwtID(jwtID))
@@ -231,7 +231,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public Map<String, String> loginWithOTP(LoginOtpRequest loginOtpRequest, String userAgent) {
         User user = userRepository
-                .findByEmailAndAccountStatus(loginOtpRequest.email(), AccountStatus.ACTIVE)
+                .findByEmailAndStatus(loginOtpRequest.email(), Status.ACTIVE)
                 .orElseThrow(() -> new AppException(ErrorCode.UNAUTHORIZED));
 
         String email = loginOtpRequest.email();
@@ -289,7 +289,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public String resetPassword(ResetPasswordRequest resetPasswordRequest) {
         User user = userRepository
-                .findByEmailAndAccountStatus(resetPasswordRequest.email(), AccountStatus.ACTIVE)
+                .findByEmailAndStatus(resetPasswordRequest.email(), Status.ACTIVE)
                 .orElseThrow(() -> new AppException(ErrorCode.UNAUTHORIZED));
 
         String email = resetPasswordRequest.email();
