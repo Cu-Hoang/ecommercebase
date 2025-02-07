@@ -1,5 +1,6 @@
 package com.project.ecommercebase.data.entity;
 
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -19,6 +20,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Data
 @Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Shop extends BaseEntity {
     @Id
     @UuidGenerator(style = UuidGenerator.Style.TIME)
@@ -39,8 +41,8 @@ public class Shop extends BaseEntity {
     User user;
 
     @OneToMany(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = Product.class)
-    Set<Product> products;
+    Set<Product> products = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = Category.class)
-    Set<Category> categories;
+    Set<Category> categories = new LinkedHashSet<>();
 }

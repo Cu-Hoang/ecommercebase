@@ -1,5 +1,6 @@
 package com.project.ecommercebase.data.entity;
 
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -24,5 +25,5 @@ public class Attribute extends BaseEntity {
     String name;
 
     @OneToMany(mappedBy = "value", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = AttributeValue.class)
-    Set<AttributeValue> attributeValues;
+    Set<AttributeValue> attributeValues = new LinkedHashSet<>();
 }

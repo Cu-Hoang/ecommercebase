@@ -4,7 +4,9 @@ import java.util.*;
 import java.util.UUID;
 
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 
 import com.project.ecommercebase.data.entity.Shop;
@@ -19,6 +21,7 @@ import com.project.ecommercebase.enums.Status;
 import com.project.ecommercebase.exception.AppException;
 import com.project.ecommercebase.mapper.UserMapper;
 import com.project.ecommercebase.service.MailService;
+import com.project.ecommercebase.service.RedisService;
 import com.project.ecommercebase.service.UserService;
 
 import lombok.AccessLevel;
@@ -40,7 +43,7 @@ public class UserServiceImpl implements UserService {
 
     PasswordEncoder passwordEncoder;
 
-    RedisServiceImpl redisService;
+    RedisService redisService;
 
     MailService mailService;
 
@@ -98,10 +101,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String updateToVendor(EmailRequest emailRequest) {
-        User user = userRepository
-                .findByEmail(emailRequest.email())
-                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_USER));
+    public String updateToVendor() {
+        JwtAuthenticationToken authToken =
+                (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+        UUID id = UUID.fromString(authToken.getName());
+        User user = userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_USER));
         if (user.getStatus() != Status.ACTIVE) throw new AppException(ErrorCode.NOT_EXISTED_USER);
         if (user.getRoles().contains(Role.VENDOR)) throw new AppException(ErrorCode.BE_VENDOR);
 
@@ -114,7 +118,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @PreAuthorize("hasRole('VENDOR')")
-    public String updateShop(UUID id, UpdateShopRequest updateShopRequest) {
+    public String createShop(ShopRequest shopRequest) {
+        JwtAuthenticationToken authToken =
+                (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+        UUID id = UUID.fromString(authToken.getName());
         User user = userRepository
                 .findByIdAndStatus(id, Status.ACTIVE)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_USER));
@@ -125,8 +132,8 @@ public class UserServiceImpl implements UserService {
             else throw new AppException(ErrorCode.UNCLASSIFIED_EXCEPTION);
         }
         Shop shop = Shop.builder()
-                .name(updateShopRequest.name())
-                .province(updateShopRequest.province())
+                .name(shopRequest.name())
+                .province(shopRequest.province())
                 .user(user)
                 .build();
         user.setShop(shop);
@@ -143,7 +150,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @PreAuthorize("T(java.util.UUID).fromString(authentication.name) == #id")
+    @PreAuthorize("T(java.util.UUID).fromString(authentication.name) == #id || hasRole('ADMIN')")
     public UserResponse getUserById(UUID id) {
         User user = userRepository
                 .findByIdAndStatus(id, Status.ACTIVE)
@@ -152,8 +159,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @PreAuthorize("T(java.util.UUID).fromString(authentication.name) == #id")
-    public UserResponse updateUser(UUID id, UserUpdateRequest userUpdateRequest) {
+    public UserResponse updateUser(UserUpdateRequest userUpdateRequest) {
+        JwtAuthenticationToken authToken =
+                (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+        UUID id = UUID.fromString(authToken.getName());
         User user = userRepository
                 .findByIdAndStatus(id, Status.ACTIVE)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_USER));
@@ -162,8 +171,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @PreAuthorize("T(java.util.UUID).fromString(authentication.name) == #id")
-    public String updatePassword(UUID id, UpdatePasswordRequest updatePasswordRequest) {
+    public String updatePassword(UpdatePasswordRequest updatePasswordRequest) {
+        JwtAuthenticationToken authToken =
+                (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+        UUID id = UUID.fromString(authToken.getName());
         User user = userRepository
                 .findByIdAndStatus(id, Status.ACTIVE)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_USER));

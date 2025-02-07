@@ -1,23 +1,25 @@
 package com.project.ecommercebase.service;
 
 import java.util.List;
+import java.util.UUID;
 
 import com.project.ecommercebase.dto.request.CategoryRequest;
-import com.project.ecommercebase.dto.request.SubCategoryRequest;
+import com.project.ecommercebase.dto.request.UpdateCategoryRequest;
 import com.project.ecommercebase.dto.response.CategoryResponse;
+import com.project.ecommercebase.dto.response.FlatCategoryResponse;
 
 public interface CategoryService {
     String createCategory(CategoryRequest categoryRequest);
 
-    String createSubCategory(SubCategoryRequest subCategoryRequest);
-
     List<CategoryResponse> getAllCategories();
 
-    CategoryResponse getCategoryById(String categoryId);
+    List<CategoryResponse> getAllCategories(UUID shopId);
 
-    CategoryResponse getSubCategoryByParentId(String parentId);
+    FlatCategoryResponse getCategoryById(UUID categoryId);
 
-    List<CategoryResponse> getAllCategoriesByTree();
+    CategoryResponse getAllSubCategoryByParentId(UUID parentId);
 
-    void updateCategory(CategoryRequest categoryRequest);
+    CategoryResponse getAllSubCategoryByParentId(UUID parentId, UUID shopId);
+
+    String updateCategory(UUID categoryId, UpdateCategoryRequest request);
 }

@@ -1,6 +1,7 @@
 package com.project.ecommercebase.data.entity;
 
 import java.math.BigDecimal;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -44,10 +45,10 @@ public class Product extends BaseEntity {
     String image;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = Image.class)
-    Set<Image> images;
+    Set<Image> images = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "value", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = AttributeValue.class)
-    Set<AttributeValue> attributeValues;
+    Set<AttributeValue> attributeValues = new LinkedHashSet<>();
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", referencedColumnName = "id", nullable = false)

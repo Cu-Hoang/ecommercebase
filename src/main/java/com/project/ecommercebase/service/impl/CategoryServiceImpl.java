@@ -4,15 +4,20 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 
 import com.project.ecommercebase.data.entity.Category;
 import com.project.ecommercebase.data.entity.Shop;
+import com.project.ecommercebase.data.entity.User;
 import com.project.ecommercebase.data.repository.CategoryRepositoy;
 import com.project.ecommercebase.data.repository.ShopRepository;
+import com.project.ecommercebase.data.repository.UserRepository;
 import com.project.ecommercebase.dto.request.CategoryRequest;
-import com.project.ecommercebase.dto.request.SubCategoryRequest;
+import com.project.ecommercebase.dto.request.UpdateCategoryRequest;
 import com.project.ecommercebase.dto.response.CategoryResponse;
+import com.project.ecommercebase.dto.response.FlatCategoryResponse;
 import com.project.ecommercebase.enums.ErrorCode;
 import com.project.ecommercebase.enums.Status;
 import com.project.ecommercebase.exception.AppException;
@@ -33,62 +38,120 @@ public class CategoryServiceImpl implements CategoryService {
 
     CategoryRepositoy categoryRepositoy;
 
+    UserRepository userRepository;
+
     CategoryMapper categoryMapper;
 
     @Override
     @PreAuthorize("hasRole('VENDOR')")
     public String createCategory(CategoryRequest categoryRequest) {
+        JwtAuthenticationToken authToken =
+                (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+        UUID vendorId = UUID.fromString(authToken.getName());
+        User vendor = userRepository
+                .findByIdAndStatus(vendorId, Status.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_USER));
         Shop shop = shopRepository
-                .findByIdAndStatus(UUID.fromString(categoryRequest.shopId()), Status.ACTIVE)
+                .findByUserAndStatus(vendor, Status.ACTIVE)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_SHOP));
-        Category category =
-                Category.builder().name(categoryRequest.name()).shop(shop).build();
+        if (categoryRequest.parent_id() != null) {
+            Category category = categoryRepositoy
+                    .findById(UUID.fromString(categoryRequest.parent_id()))
+                    .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_CATEGORY));
 
-        categoryRepositoy.save(category);
+            categoryRepositoy.save(Category.builder()
+                    .name(categoryRequest.name())
+                    .parentCategory(category)
+                    .shop(shop)
+                    .build());
+        } else
+            categoryRepositoy.save(
+                    Category.builder().name(categoryRequest.name()).shop(shop).build());
         return "Category created successfully";
     }
 
     @Override
     @PreAuthorize("hasRole('VENDOR')")
-    public String createSubCategory(SubCategoryRequest subCategoryRequest) {
-        UUID shopId = UUID.fromString(subCategoryRequest.shopId());
-        Shop shop = shopRepository
-                .findByIdAndStatus(shopId, Status.ACTIVE)
-                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_SHOP));
-        if (!categoryRepositoy.existsById(UUID.fromString(subCategoryRequest.parent_id())))
-            throw new AppException(ErrorCode.NOT_EXISTED_CATEGORY);
-        Category category = Category.builder()
-                .name(subCategoryRequest.name())
-                .parent_id(UUID.fromString(subCategoryRequest.parent_id()))
-                .shop(shop)
-                .build();
-
-        categoryRepositoy.save(category);
-        return "Category created successfully";
-    }
-
-    @Override
     public List<CategoryResponse> getAllCategories() {
-        return categoryRepositoy.findAll().stream()
+        JwtAuthenticationToken authToken =
+                (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+        UUID vendorId = UUID.fromString(authToken.getName());
+        User vendor = userRepository
+                .findByIdAndStatus(vendorId, Status.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_USER));
+        Shop shop = shopRepository
+                .findByUserAndStatus(vendor, Status.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_SHOP));
+        return categoryRepositoy.findAllCategoriesByShop(shop).stream()
                 .map(categoryMapper::categoryToCategoryResponse)
                 .toList();
     }
 
     @Override
-    public CategoryResponse getCategoryById(String categoryId) {
-        return null;
+    public List<CategoryResponse> getAllCategories(UUID shopId) {
+        Shop shop = shopRepository
+                .findByIdAndStatus(shopId, Status.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_SHOP));
+        return categoryRepositoy.findAllCategoriesByShop(shop).stream()
+                .map(categoryMapper::categoryToCategoryResponse)
+                .toList();
     }
 
     @Override
-    public CategoryResponse getSubCategoryByParentId(String parentId) {
-        return null;
+    @PreAuthorize("hasRole('VENDOR')")
+    public FlatCategoryResponse getCategoryById(UUID categoryId) {
+        FlatCategoryResponse category = categoryRepositoy
+                .findCategoryById(categoryId)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_CATEGORY));
+        return category;
     }
 
     @Override
-    public List<CategoryResponse> getAllCategoriesByTree() {
-        return categoryRepositoy.findALLByTree().stream().toList();
+    @PreAuthorize("hasRole('VENDOR')")
+    public CategoryResponse getAllSubCategoryByParentId(UUID parentId) {
+        JwtAuthenticationToken authToken =
+                (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+        UUID vendorId = UUID.fromString(authToken.getName());
+        User vendor = userRepository
+                .findByIdAndStatus(vendorId, Status.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_USER));
+        Shop shop = shopRepository
+                .findByUserAndStatus(vendor, Status.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_SHOP));
+        Category category = categoryRepositoy
+                .findByShopAndId(shop, parentId)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_CATEGORY));
+        return categoryMapper.categoryToCategoryResponse(category);
     }
 
     @Override
-    public void updateCategory(CategoryRequest categoryRequest) {}
+    public CategoryResponse getAllSubCategoryByParentId(UUID parentId, UUID shopId) {
+        Shop shop = shopRepository
+                .findByIdAndStatus(shopId, Status.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_SHOP));
+        Category category = categoryRepositoy
+                .findByShopAndId(shop, parentId)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_CATEGORY));
+        return categoryMapper.categoryToCategoryResponse(category);
+    }
+
+    @Override
+    @PreAuthorize("hasRole('VENDOR')")
+    public String updateCategory(UUID categoryId, UpdateCategoryRequest request) {
+        JwtAuthenticationToken authToken =
+                (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+        UUID vendorId = UUID.fromString(authToken.getName());
+        User vendor = userRepository
+                .findByIdAndStatus(vendorId, Status.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_USER));
+        Shop shop = shopRepository
+                .findByUserAndStatus(vendor, Status.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_SHOP));
+        Category category = categoryRepositoy
+                .findByShopAndId(shop, categoryId)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_CATEGORY));
+        category.setName(request.name());
+        categoryRepositoy.save(category);
+        return "Update category successfully";
+    }
 }

@@ -5,4 +5,4 @@ import jakarta.validation.constraints.NotEmpty;
 
 import org.hibernate.validator.constraints.UUID;
 
-public record CategoryRequest(@NotEmpty @NotBlank String name, @NotEmpty @NotBlank @UUID String shopId) {}
+public record CategoryRequest(@NotEmpty @NotBlank String name, @UUID String parent_id) {}

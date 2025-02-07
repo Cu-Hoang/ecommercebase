@@ -88,6 +88,7 @@ public class SecurityConfig {
         return new CorsFilter(urlBasedCorsConfigurationSource);
     }
 
+    // can use AuthoritiesExtractor here
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();

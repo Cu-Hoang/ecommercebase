@@ -13,9 +13,9 @@ public class Endpoint {
         public static final String REGISTER_VENDOR = "/register/vendor";
         public static final String UPDATE_TO_VENDOR = "/update-to-vendor";
         public static final String GET_BY_ID = "/{id}";
-        public static final String UPDATE_USER = "/update/{id}";
-        public static final String UPDATE_USER_PASSWORD = "/update-password/{id}";
-        public static final String UPDATE_SHOP = "/update-shop/{id}";
+        public static final String UPDATE_USER = "/update";
+        public static final String UPDATE_USER_PASSWORD = "/update-password";
+        public static final String CREATE_SHOP = "/create-shop";
     }
 
     public static class AuthEndpoint {
@@ -33,7 +33,10 @@ public class Endpoint {
 
     public static class CategoryEndpoint {
         public static final String CREATE_CATEGORY = "/create-category";
-        public static final String CREATE_SUBCATEGORY = "/create-subcategory";
-        public static final String GET_TREE = "/tree";
+        public static final String GET_ALL_SUBCATEGORY_BY_ID = "/get-all-subcategory/{id}";
+        public static final String GET_ALL_SUBCATEGORY_BY_ID_AND_SHOPID = "/get-all-subcategory/{shopId}/{id}";
+        public static final String GET_BY_ID = "/{id}";
+        public static final String GET_BY_SHOPID = "/shop/{shopId}";
+        public static final String UPDATE_BY_ID = "/update/{id}";
     }
 }
