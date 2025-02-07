@@ -13,4 +13,5 @@ public record UserRegisterRequest(
         String lastname,
         String username,
         @NotEmpty @NotBlank String password,
-        @Past LocalDate dateOfBirth) {}
+        @Past LocalDate dateOfBirth,
+        String avatar) {}

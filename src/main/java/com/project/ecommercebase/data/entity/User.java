@@ -2,6 +2,7 @@ package com.project.ecommercebase.data.entity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -9,8 +10,8 @@ import jakarta.persistence.*;
 
 import org.hibernate.annotations.UuidGenerator;
 
-import com.project.ecommercebase.enums.AccountStatus;
 import com.project.ecommercebase.enums.Role;
+import com.project.ecommercebase.enums.Status;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -21,6 +22,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Data
 @Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class User extends BaseEntity {
     @Id
     @UuidGenerator(style = UuidGenerator.Style.TIME)
@@ -41,7 +43,7 @@ public class User extends BaseEntity {
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
-    AccountStatus accountStatus = AccountStatus.PENDING;
+    Status status = Status.PENDING;
 
     LocalDate dateOfBirth;
 
@@ -62,8 +64,8 @@ public class User extends BaseEntity {
     Shop shop;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = RefreshToken.class)
-    Set<RefreshToken> refreshTokens;
+    Set<RefreshToken> refreshTokens = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = Address.class)
-    Set<Address> addresses;
+    Set<Address> addresses = new LinkedHashSet<>();
 }

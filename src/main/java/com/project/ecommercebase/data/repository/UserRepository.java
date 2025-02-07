@@ -5,14 +5,14 @@ import java.util.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.project.ecommercebase.data.entity.User;
-import com.project.ecommercebase.enums.AccountStatus;
+import com.project.ecommercebase.enums.Status;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByEmail(String email);
 
-    Optional<User> findByEmailAndAccountStatus(String email, AccountStatus accountStatus);
+    Optional<User> findByEmailAndStatus(String email, Status status);
 
-    Boolean existsByIdAndAccountStatus(UUID id, AccountStatus accountStatus);
+    Boolean existsByIdAndStatus(UUID id, Status status);
 
-    Optional<User> findByIdAndAccountStatus(UUID id, AccountStatus accountStatus);
+    Optional<User> findByIdAndStatus(UUID id, Status status);
 }

@@ -35,6 +35,7 @@ ext {
 	kafka_version = "3.3.0"
 	hibernate_validator = "8.0.2.Final"
 	oauth2_resource_server = "3.4.1"
+	jackson_core = "2.18.2"
 }
 
 dependencies {
@@ -52,7 +53,7 @@ dependencies {
 	implementation "org.springframework.kafka:spring-kafka:${kafka_version}"
 	implementation "org.hibernate.validator:hibernate-validator:${hibernate_validator}"
 	implementation "org.springframework.boot:spring-boot-starter-oauth2-resource-server:${oauth2_resource_server}"
-
+//	implementation "com.fasterxml.jackson.core:jackson-core:${jackson_core}"
 
 	compileOnly "org.projectlombok:lombok:${lombok_version}"
 	runtimeOnly 'org.postgresql:postgresql'

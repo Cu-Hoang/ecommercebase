@@ -58,10 +58,9 @@ public class UserController {
     }
 
     @PostMapping(value = Endpoint.UserEndpoint.UPDATE_TO_VENDOR)
-    public ApiResponse<UserResponse> updateYoVendor(@RequestBody @Validated EmailRequest emailRequest) {
+    public ApiResponse<UserResponse> updateToVendor() {
         return ApiResponse.<UserResponse>builder()
-                .message("The customer has just been promoted to a vendor successfully.")
-                .data(userService.updateToVendor(emailRequest))
+                .message(userService.updateToVendor())
                 .build();
     }
 
@@ -79,19 +78,24 @@ public class UserController {
                 .build();
     }
 
-    @PutMapping(value = Endpoint.UserEndpoint.UPDATE_USER)
-    public ApiResponse<UserResponse> updateUser(
-            @PathVariable("id") UUID id, @RequestBody @Validated UserUpdateRequest userUpdateRequest) {
+    @PatchMapping(value = Endpoint.UserEndpoint.UPDATE_USER)
+    public ApiResponse<UserResponse> updateUser(@RequestBody @Validated UserUpdateRequest userUpdateRequest) {
         return ApiResponse.<UserResponse>builder()
-                .data(userService.updateUser(id, userUpdateRequest))
+                .data(userService.updateUser(userUpdateRequest))
                 .build();
     }
 
-    @PutMapping(value = Endpoint.UserEndpoint.UPDATE_USER_PASSWORD)
-    public ApiResponse<String> updatePassword(
-            @PathVariable("id") UUID id, @RequestBody @Validated UpdatePasswordRequest updatePasswordRequest) {
+    @PatchMapping(value = Endpoint.UserEndpoint.UPDATE_USER_PASSWORD)
+    public ApiResponse<String> updatePassword(@RequestBody @Validated UpdatePasswordRequest updatePasswordRequest) {
         return ApiResponse.<String>builder()
-                .message(userService.updatePassword(id, updatePasswordRequest))
+                .message(userService.updatePassword(updatePasswordRequest))
+                .build();
+    }
+
+    @PostMapping(value = Endpoint.UserEndpoint.CREATE_SHOP)
+    public ApiResponse<String> createShop(@RequestBody @Validated ShopRequest updateShopRequest) {
+        return ApiResponse.<String>builder()
+                .message(userService.createShop(updateShopRequest))
                 .build();
     }
 }

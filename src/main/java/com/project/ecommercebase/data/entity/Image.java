@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 
 import org.hibernate.annotations.UuidGenerator;
 
-import com.project.ecommercebase.enums.AddressType;
+import com.project.ecommercebase.enums.Status;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -17,34 +17,21 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Data
 @Builder
-public class Address extends BaseEntity {
+public class Image extends BaseEntity {
     @Id
     @UuidGenerator(style = UuidGenerator.Style.TIME)
     UUID id;
 
-    String district;
+    String url;
 
-    String province;
-
-    String ward;
-
-    String address_line;
-
-    String postal_code;
+    @Column(unique = true)
+    UUID color_id;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
-    AddressType addressType = AddressType.HOME;
-
-    Boolean isDefault;
-
-    @Builder.Default
-    Boolean isPickup = false;
-
-    @Builder.Default
-    Boolean isReturn = false;
+    Status status = Status.ACTIVE;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
-    User user;
+    @JoinColumn(name = "product_id", referencedColumnName = "id", nullable = false)
+    Product product;
 }

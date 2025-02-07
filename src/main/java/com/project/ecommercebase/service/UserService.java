@@ -14,13 +14,15 @@ public interface UserService {
 
     UserResponse registerUser(UserRegisterRequest userRegisterRequest, Role role);
 
-    UserResponse updateToVendor(EmailRequest emailRequest);
+    String updateToVendor();
+
+    String createShop(ShopRequest shopRequest);
 
     List<UserResponse> getAllUsers();
 
     UserResponse getUserById(UUID id);
 
-    UserResponse updateUser(UUID id, UserUpdateRequest userUpdateRequest);
+    UserResponse updateUser(UserUpdateRequest userUpdateRequest);
 
-    String updatePassword(UUID id, UpdatePasswordRequest updatePasswordRequest);
+    String updatePassword(UpdatePasswordRequest updatePasswordRequest);
 }
