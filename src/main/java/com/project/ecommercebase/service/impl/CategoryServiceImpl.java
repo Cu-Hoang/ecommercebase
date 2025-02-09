@@ -67,7 +67,7 @@ public class CategoryServiceImpl implements CategoryService {
         } else
             categoryRepositoy.save(
                     Category.builder().name(categoryRequest.name()).shop(shop).build());
-        return "Category created successfully";
+        return "Created category successfully";
     }
 
     @Override
@@ -152,6 +152,6 @@ public class CategoryServiceImpl implements CategoryService {
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_CATEGORY));
         category.setName(request.name());
         categoryRepositoy.save(category);
-        return "Update category successfully";
+        return "Updated category successfully";
     }
 }

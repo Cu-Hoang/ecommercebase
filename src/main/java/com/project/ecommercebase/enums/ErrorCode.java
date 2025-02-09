@@ -24,6 +24,8 @@ public enum ErrorCode {
     REGISTERED_SHOP(1011, "You registered shop", HttpStatus.BAD_REQUEST),
     NOT_EXISTED_SHOP(1012, "Shop does not exist", HttpStatus.BAD_REQUEST),
     NOT_EXISTED_CATEGORY(1013, "Category does not exist", HttpStatus.BAD_REQUEST),
+    LOWEST_CATEGORY(1014, "Category must be the lowest.", HttpStatus.BAD_REQUEST),
+    NOT_EXISTED_PRODUCT(1015, "Product does not exist", HttpStatus.BAD_REQUEST),
     UNCLASSIFIED_EXCEPTION(9999, "Unclassified exception", HttpStatus.INTERNAL_SERVER_ERROR);
     int code;
     String message;
