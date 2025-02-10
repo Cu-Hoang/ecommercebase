@@ -45,4 +45,7 @@ public class Shop extends BaseEntity {
 
     @OneToMany(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = Category.class)
     Set<Category> categories = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = Attribute.class)
+    Set<Attribute> attributes = new LinkedHashSet<>();
 }

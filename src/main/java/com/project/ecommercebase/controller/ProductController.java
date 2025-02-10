@@ -7,8 +7,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import com.project.ecommercebase.constant.Endpoint;
-import com.project.ecommercebase.dto.request.ProductRequest;
-import com.project.ecommercebase.dto.request.UpdateProductRequest;
+import com.project.ecommercebase.dto.request.*;
 import com.project.ecommercebase.dto.response.ApiResponse;
 import com.project.ecommercebase.dto.response.ProductResponse;
 import com.project.ecommercebase.service.ProductService;
@@ -75,6 +74,67 @@ public class ProductController {
             @PathVariable("categoryId") UUID categoryId, @PathVariable("shopId") UUID shopId) {
         return ApiResponse.<List<ProductResponse>>builder()
                 .data(productService.getAllProductsByCategory(categoryId, shopId))
+                .build();
+    }
+
+    @PostMapping(Endpoint.ProductEndpoint.CREATE_ATTRIBUTE)
+    public ApiResponse<String> createAttribute(@RequestBody @Validated AttributeRequest attributeRequest) {
+        return ApiResponse.<String>builder()
+                .message(productService.createAttribute(attributeRequest))
+                .build();
+    }
+
+    @PatchMapping(Endpoint.ProductEndpoint.UPDATE_ATTRIBUTE)
+    public ApiResponse<String> updateAttribute(
+            @PathVariable("attributeId") UUID id, @RequestBody @Validated AttributeRequest attributeRequest) {
+        return ApiResponse.<String>builder()
+                .message(productService.updateAttribute(id, attributeRequest))
+                .build();
+    }
+
+    @PostMapping(Endpoint.ProductEndpoint.CREATE_ATTRIBUTE_VALUE)
+    public ApiResponse<String> createAttributeValue(
+            @PathVariable("attributeId") UUID id, @RequestBody @Validated ValueRequest valueRequest) {
+        return ApiResponse.<String>builder()
+                .message(productService.createAttributeValue(id, valueRequest))
+                .build();
+    }
+
+    @PatchMapping(Endpoint.ProductEndpoint.UPDATE_ATTRIBUTE_VALUE)
+    public ApiResponse<String> updateAttributeValue(
+            @PathVariable("attributeValueId") UUID id, @RequestBody @Validated ValueRequest valueRequest) {
+        return ApiResponse.<String>builder()
+                .message(productService.updateAttributeValue(id, valueRequest))
+                .build();
+    }
+
+    @DeleteMapping(Endpoint.ProductEndpoint.DELETE_ATTRIBUTE)
+    public ApiResponse<String> deleteAttribute(@PathVariable("attributeId") UUID id) {
+        return ApiResponse.<String>builder()
+                .message(productService.deleteAttribute(id))
+                .build();
+    }
+
+    @DeleteMapping(Endpoint.ProductEndpoint.DELETE_ATTRIBUTE_VALUE)
+    public ApiResponse<String> deleteAttributeValue(@PathVariable("attributeValueId") UUID id) {
+        return ApiResponse.<String>builder()
+                .message(productService.deleteAttributeValue(id))
+                .build();
+    }
+
+    @PostMapping(Endpoint.ProductEndpoint.ADD_ATTRIBUTE_VALUE_TO_PRODUCT)
+    public ApiResponse<String> addAttributeValueToProduct(
+            @RequestBody @Validated ProductAttributeValueRequest request) {
+        return ApiResponse.<String>builder()
+                .message(productService.addAttributeValueToProduct(request))
+                .build();
+    }
+
+    @DeleteMapping(Endpoint.ProductEndpoint.DELETE_ATTRIBUTE_VALUE_FROM_PRODUCT)
+    public ApiResponse<String> deleteAttributeValueFromProduct(
+            @RequestBody @Validated ProductAttributeValueRequest request) {
+        return ApiResponse.<String>builder()
+                .message(productService.deleteAttributeValueFromProduct(request))
                 .build();
     }
 }

@@ -47,8 +47,12 @@ public class Product extends BaseEntity {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = Image.class)
     Set<Image> images = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "value", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = AttributeValue.class)
-    Set<AttributeValue> attributeValues = new LinkedHashSet<>();
+    @OneToMany(
+            mappedBy = "product",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            targetEntity = ProductAttributeValue.class)
+    Set<ProductAttributeValue> productAttributeValues = new LinkedHashSet<>();
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", referencedColumnName = "id", nullable = false)

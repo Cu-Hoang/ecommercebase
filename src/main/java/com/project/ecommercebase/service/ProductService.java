@@ -3,8 +3,7 @@ package com.project.ecommercebase.service;
 import java.util.List;
 import java.util.UUID;
 
-import com.project.ecommercebase.dto.request.ProductRequest;
-import com.project.ecommercebase.dto.request.UpdateProductRequest;
+import com.project.ecommercebase.dto.request.*;
 import com.project.ecommercebase.dto.response.ProductResponse;
 
 public interface ProductService {
@@ -21,4 +20,20 @@ public interface ProductService {
     List<ProductResponse> getAllProductsByCategory(UUID categoryId);
 
     List<ProductResponse> getAllProductsByCategory(UUID categoryId, UUID shopId);
+
+    String createAttribute(AttributeRequest attributeRequest);
+
+    String createAttributeValue(UUID id, ValueRequest valueRequest);
+
+    String updateAttribute(UUID id, AttributeRequest attributeRequest);
+
+    String updateAttributeValue(UUID id, ValueRequest valueRequest);
+
+    String deleteAttribute(UUID id);
+
+    String deleteAttributeValue(UUID id);
+
+    String addAttributeValueToProduct(ProductAttributeValueRequest request);
+
+    String deleteAttributeValueFromProduct(ProductAttributeValueRequest request);
 }

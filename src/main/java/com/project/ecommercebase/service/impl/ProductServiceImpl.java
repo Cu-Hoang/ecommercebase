@@ -7,16 +7,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import com.project.ecommercebase.configuration.AuthId;
-import com.project.ecommercebase.data.entity.Category;
-import com.project.ecommercebase.data.entity.Product;
-import com.project.ecommercebase.data.entity.Shop;
-import com.project.ecommercebase.data.entity.User;
-import com.project.ecommercebase.data.repository.CategoryRepositoy;
-import com.project.ecommercebase.data.repository.ProductRepository;
-import com.project.ecommercebase.data.repository.ShopRepository;
-import com.project.ecommercebase.data.repository.UserRepository;
-import com.project.ecommercebase.dto.request.ProductRequest;
-import com.project.ecommercebase.dto.request.UpdateProductRequest;
+import com.project.ecommercebase.data.entity.*;
+import com.project.ecommercebase.data.repository.*;
+import com.project.ecommercebase.dto.request.*;
 import com.project.ecommercebase.dto.response.ProductResponse;
 import com.project.ecommercebase.enums.ErrorCode;
 import com.project.ecommercebase.enums.Status;
@@ -39,6 +32,12 @@ public class ProductServiceImpl implements ProductService {
     ShopRepository shopRepository;
 
     CategoryRepositoy categoryRepositoy;
+
+    AttributeRepository attributeRepository;
+
+    ValueRepository valueRepository;
+
+    ProductAttributeValueRepository productAttributeValueRepository;
 
     ProductMapper productMapper;
 
@@ -158,5 +157,169 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findByCategoryAndShopAndStatus(category, shop, Status.ACTIVE).stream()
                 .map(productMapper::productToProductResponse)
                 .toList();
+    }
+
+    @Override
+    @PreAuthorize("hasRole('VENDOR')")
+    public String createAttribute(AttributeRequest attributeRequest) {
+        UUID vendorId = authId.getId();
+        User vendor = userRepository
+                .findByIdAndStatus(vendorId, Status.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_USER));
+        Shop shop = shopRepository
+                .findByUserAndStatus(vendor, Status.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_SHOP));
+        Attribute attribute =
+                Attribute.builder().name(attributeRequest.name()).shop(shop).build();
+        attributeRepository.save(attribute);
+        return "Created attribute successfully";
+    }
+
+    @Override
+    @PreAuthorize("hasRole('VENDOR')")
+    public String createAttributeValue(UUID attributeId, ValueRequest valueRequest) {
+        UUID vendorId = authId.getId();
+        User vendor = userRepository
+                .findByIdAndStatus(vendorId, Status.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_USER));
+        Shop shop = shopRepository
+                .findByUserAndStatus(vendor, Status.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_SHOP));
+        Attribute attribute = attributeRepository
+                .findByIdAndShop(attributeId, shop)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_ATTRIBUTE));
+        Value value =
+                Value.builder().value(valueRequest.value()).attribute(attribute).build();
+        valueRepository.save(value);
+        return "Created value successfully";
+    }
+
+    @Override
+    @PreAuthorize("hasRole('VENDOR')")
+    public String updateAttribute(UUID id, AttributeRequest attributeRequest) {
+        UUID vendorId = authId.getId();
+        User vendor = userRepository
+                .findByIdAndStatus(vendorId, Status.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_USER));
+        Shop shop = shopRepository
+                .findByUserAndStatus(vendor, Status.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_SHOP));
+        Attribute attribute = attributeRepository
+                .findByIdAndShop(id, shop)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_ATTRIBUTE));
+        attribute.setName(attributeRequest.name());
+        attributeRepository.save(attribute);
+        return "Updated attribute successfully";
+    }
+
+    @Override
+    @PreAuthorize("hasRole('VENDOR')")
+    public String updateAttributeValue(UUID id, ValueRequest valueRequest) {
+        UUID vendorId = authId.getId();
+        User vendor = userRepository
+                .findByIdAndStatus(vendorId, Status.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_USER));
+        Shop shop = shopRepository
+                .findByUserAndStatus(vendor, Status.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_SHOP));
+        Value value = valueRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_VALUE));
+        if (!attributeRepository.existsByIdAndShop(value.getAttribute().getId(), shop))
+            throw new AppException(ErrorCode.NOT_EXISTED_ATTRIBUTE);
+        value.setValue(valueRequest.value());
+        valueRepository.save(value);
+        return "Updated value successfully";
+    }
+
+    @Override
+    @PreAuthorize("hasRole('VENDOR')")
+    public String deleteAttribute(UUID id) {
+        UUID vendorId = authId.getId();
+        User vendor = userRepository
+                .findByIdAndStatus(vendorId, Status.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_USER));
+        Shop shop = shopRepository
+                .findByUserAndStatus(vendor, Status.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_SHOP));
+        Attribute attribute = attributeRepository
+                .findByIdAndShop(id, shop)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_ATTRIBUTE));
+        if (valueRepository.existsByAttribute(attribute)) throw new AppException(ErrorCode.EXISTED_VALUE_ATTRIBUTE);
+        if (productAttributeValueRepository.existsByAttribute(attribute))
+            throw new AppException(ErrorCode.EXISTED_VALUE_PRODUCT);
+        attributeRepository.deleteAttributeById(attribute.getId());
+        return "Deleted attribute successfully";
+    }
+
+    @Override
+    @PreAuthorize("hasRole('VENDOR')")
+    public String deleteAttributeValue(UUID id) {
+        UUID vendorId = authId.getId();
+        User vendor = userRepository
+                .findByIdAndStatus(vendorId, Status.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_USER));
+        Shop shop = shopRepository
+                .findByUserAndStatus(vendor, Status.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_SHOP));
+        Value value = valueRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_VALUE));
+        if (!attributeRepository.existsByIdAndShop(value.getAttribute().getId(), shop))
+            throw new AppException(ErrorCode.NOT_EXISTED_ATTRIBUTE);
+        if (productAttributeValueRepository.existsByValue(value))
+            throw new AppException(ErrorCode.EXISTED_VALUE_PRODUCT);
+        valueRepository.delete(value);
+        return "Deleted value successfully";
+    }
+
+    @Override
+    @PreAuthorize("hasRole('VENDOR')")
+    public String addAttributeValueToProduct(ProductAttributeValueRequest request) {
+        UUID vendorId = authId.getId();
+        User vendor = userRepository
+                .findByIdAndStatus(vendorId, Status.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_USER));
+        Shop shop = shopRepository
+                .findByUserAndStatus(vendor, Status.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_SHOP));
+        Product product = productRepository
+                .findByIdAndShopAndStatus(UUID.fromString(request.productId()), shop, Status.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_PRODUCT));
+        Attribute attribute = attributeRepository
+                .findByIdAndShop(UUID.fromString(request.attributeId()), shop)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_ATTRIBUTE));
+        Value value = valueRepository
+                .findByIdAndAttribute(UUID.fromString(request.valueId()), attribute)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_VALUE));
+        ProductAttributeValue productAttributeValue = ProductAttributeValue.builder()
+                .product(product)
+                .attribute(attribute)
+                .value(value)
+                .build();
+        productAttributeValueRepository.save(productAttributeValue);
+        return "Added product attribute value successfully";
+    }
+
+    @Override
+    @PreAuthorize("hasRole('VENDOR')")
+    public String deleteAttributeValueFromProduct(ProductAttributeValueRequest request) {
+        UUID vendorId = authId.getId();
+        User vendor = userRepository
+                .findByIdAndStatus(vendorId, Status.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_USER));
+        Shop shop = shopRepository
+                .findByUserAndStatus(vendor, Status.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_SHOP));
+        Product product = productRepository
+                .findByIdAndShopAndStatus(UUID.fromString(request.productId()), shop, Status.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_PRODUCT));
+        Attribute attribute = attributeRepository
+                .findByIdAndShop(UUID.fromString(request.attributeId()), shop)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_ATTRIBUTE));
+        Value value = valueRepository
+                .findByIdAndAttribute(UUID.fromString(request.valueId()), attribute)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_VALUE));
+        ProductAttributeValue productAttributeValue = productAttributeValueRepository
+                .findByProductAndAttributeAndValue(product, attribute, value)
+                .orElseThrow(() -> new AppException(ErrorCode.UNCLASSIFIED_EXCEPTION));
+        productAttributeValueRepository.delete(productAttributeValue);
+        return "Deleted product attribute value successfully";
     }
 }
