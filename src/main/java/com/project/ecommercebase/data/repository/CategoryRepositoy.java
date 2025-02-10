@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import com.project.ecommercebase.data.entity.Category;
 import com.project.ecommercebase.data.entity.Shop;
 import com.project.ecommercebase.dto.response.FlatCategoryResponse;
+import com.project.ecommercebase.enums.Status;
 
 public interface CategoryRepositoy extends JpaRepository<Category, UUID> {
     @Query("SELECT c FROM Category c WHERE c.parentCategory IS NULL AND c.shop = :shop")
@@ -20,4 +21,8 @@ public interface CategoryRepositoy extends JpaRepository<Category, UUID> {
     Optional<FlatCategoryResponse> findCategoryById(UUID id);
 
     Optional<Category> findByShopAndId(Shop shop, UUID id);
+
+    Optional<Category> findByIdAndShopAndStatus(UUID id, Shop shop, Status status);
+
+    Boolean existsByIdAndStatus(UUID id, Status status);
 }

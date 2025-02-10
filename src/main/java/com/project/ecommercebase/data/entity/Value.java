@@ -1,5 +1,7 @@
 package com.project.ecommercebase.data.entity;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import jakarta.persistence.*;
@@ -15,7 +17,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Data
 @Builder
-public class AttributeValue extends BaseEntity {
+public class Value extends BaseEntity {
     @Id
     @UuidGenerator(style = UuidGenerator.Style.TIME)
     UUID id;
@@ -24,9 +26,12 @@ public class AttributeValue extends BaseEntity {
     @JoinColumn(name = "attribute_id", referencedColumnName = "id", nullable = false)
     Attribute attribute;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", referencedColumnName = "id", nullable = false)
-    Product product;
+    @OneToMany(
+            mappedBy = "value",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            targetEntity = ProductAttributeValue.class)
+    Set<ProductAttributeValue> productAttributeValues = new LinkedHashSet<>();
 
     String value;
 }

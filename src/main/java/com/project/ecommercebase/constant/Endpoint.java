@@ -5,6 +5,7 @@ public class Endpoint {
     public static final String ENDPOINT_AUTH = "/auths";
     public static final String ENDPOINT_SHOP = "/shops";
     public static final String ENDPOINT_CATEGORY = "/categories";
+    public static final String ENDPOINT_PRODUCT = "/products";
 
     public static class UserEndpoint {
         public static final String REGISTER = "/register";
@@ -38,5 +39,23 @@ public class Endpoint {
         public static final String GET_BY_ID = "/{id}";
         public static final String GET_BY_SHOPID = "/shop/{shopId}";
         public static final String UPDATE_BY_ID = "/update/{id}";
+    }
+
+    public static class ProductEndpoint {
+        public static final String CREATE_PRODUCT = "/vendor/create-product/{categoryId}";
+        public static final String UPDATE_PRODUCT = "/vendor/update-product/{productId}";
+        public static final String GET_ALL_PRODUCTS_BY_VENDOR = "/vendor";
+        public static final String GET_ALL_PRODUCTS_BY_CUSTOMER = "/{shopId}";
+        public static final String GET_PRODUCT = "/all/{productId}";
+        public static final String GET_ALL_PRODUCTS_BY_CATEGORY_VENDOR = "/vendor/{categoryId}";
+        public static final String GET_ALL_PRODUCTS_BY_CATEGORY_CUSTOMER = "/{shopId}/{categoryId}";
+        public static final String CREATE_ATTRIBUTE = "/vendor/create-attribute";
+        public static final String UPDATE_ATTRIBUTE = "/vendor/update-attribute/{attributeId}";
+        public static final String DELETE_ATTRIBUTE = "/vendor/delete-attribute/{attributeId}";
+        public static final String CREATE_ATTRIBUTE_VALUE = "/vendor/create-attribute-value/{attributeId}";
+        public static final String UPDATE_ATTRIBUTE_VALUE = "/vendor/update-attribute-value/{attributeValueId}";
+        public static final String DELETE_ATTRIBUTE_VALUE = "/vendor/delete-attribute-value/{attributeValueId}";
+        public static final String ADD_ATTRIBUTE_VALUE_TO_PRODUCT = "/vendor/add-attribute-value-to-product";
+        public static final String DELETE_ATTRIBUTE_VALUE_FROM_PRODUCT = "/vendor/delete-attribute-value-from-product";
     }
 }
